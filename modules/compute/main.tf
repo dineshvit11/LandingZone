@@ -56,8 +56,8 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   default_node_pool {
     name           = "system"
-    node_count     = 2
-    vm_size        = "Standard_D2s_v5"
+    node_count     = 1
+    vm_size        = "Standard_DC2s_v3"
     vnet_subnet_id = var.aks_subnet_id
   }
 
@@ -85,8 +85,8 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
 
   name                  = "user01"
   kubernetes_cluster_id = azurerm_kubernetes_cluster.aks[0].id
-  vm_size               = "Standard_D4s_v5"
-  node_count            = 2
+  vm_size               = "Standard_DC2s_v3"
+  node_count            = 1
   mode                  = "User"
   vnet_subnet_id        = var.aks_subnet_id
   tags                  = var.tags
