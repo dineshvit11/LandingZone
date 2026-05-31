@@ -1,27 +1,35 @@
-module "management" {
-  source   = "../../../modules/management"
-  rg_name  = "dev-management-rg"
+resource "azurerm_resource_group" "landing_zone" {
+  name     = var.resource_group_name
   location = var.location
   tags     = var.tags
 }
 
-module "identity" {
-  source   = "../../../modules/identity"
-  rg_name  = "dev-identity-rg"
-  location = var.location
-  tags     = var.tags
+module "network" {
+  source = "../../modules/network"
+
+  resource_group_name = azurerm_resource_group.landing_zone.name
+  location            = azurerm_resource_group.landing_zone.location
+  resource_prefix     = var.resource_prefix
+  tags                = var.tags
+
+  hub_address_space      = var.hub_address_space
+  workload_address_space = var.workload_address_space
+  hub_subnets            = var.hub_subnets
+  workload_subnets       = var.workload_subnets
 }
 
-module "connectivity" {
-  source   = "../../../modules/connectivity"
-  rg_name  = "dev-connectivity-rg"
-  location = var.location
-  tags     = var.tags
-}
+module "compute" {
+  source = "../../modules/compute"
 
-module "security" {
-  source   = "../../../modules/security"
-  rg_name  = "dev-security-rg"
-  location = var.location
-  tags     = var.tags
+  resource_group_name        = azurerm_resource_group.landing_zone.name
+  location                   = azurerm_resource_group.landing_zone.location
+  resource_prefix            = var.resource_prefix
+  tags                       = var.tags
+  vm_subnet_id               = module.network.vm_subnet_id
+  aks_subnet_id              = module.network.aks_subnet_id
+  vm_admin_ssh_public_key    = var.vm_admin_ssh_public_key
+  aks_enabled                = var.aks_enabled
+  aks_admin_group_object_ids = var.aks_admin_group_object_ids
+
+  depends_on = [module.network]
 }
